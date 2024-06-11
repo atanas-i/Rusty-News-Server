@@ -30,7 +30,7 @@ class JwtService {
     }
 
     fun validate(credential: JWTCredential): JWTPrincipal? {
-        if (credential.payload.getClaim("email").asString() != "") {
+        return if (credential.payload.getClaim("email").asString() != "") {
             JWTPrincipal(credential.payload)
         } else {
             null
