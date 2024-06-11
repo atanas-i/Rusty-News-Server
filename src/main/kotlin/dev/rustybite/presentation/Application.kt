@@ -1,5 +1,6 @@
 package dev.rustybite.presentation
 
+import dev.rustybite.data.database.DatabaseFactory
 import dev.rustybite.data.database.configureFlyway
 import dev.rustybite.presentation.plugins.configureRouting
 import dev.rustybite.presentation.plugins.configureSecurity
@@ -12,6 +13,7 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
     configureFlyway(this.environment.config)
+    DatabaseFactory.initialize(this.environment.config)
     configureSecurity()
     configureSerialization()
     configureRouting()

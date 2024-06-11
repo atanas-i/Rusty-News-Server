@@ -6,7 +6,7 @@ import io.ktor.server.config.*
 
 fun hikariDataSource(appConfig: ApplicationConfig): HikariDataSource {
     val hikariConfig = HikariConfig()
-    hikariConfig.jdbcUrl = System.getenv("JDBC_URL")//appConfig.property("storage.jdbcUrl").getString()
+    hikariConfig.jdbcUrl = System.getenv("JDBC_URL")
     hikariConfig.driverClassName = System.getenv("JDBC_DRIVER")
 
     return HikariDataSource(hikariConfig)
