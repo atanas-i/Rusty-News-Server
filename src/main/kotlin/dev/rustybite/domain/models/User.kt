@@ -12,7 +12,9 @@ data class User(
 )
 
 object Users : Table() {
-    val userId = varchar("user_id", 155)
-    val email = varchar("email", 155)
-    val hashedPassword = varchar("hashed_password", 255)
+    val userId = varchar("user_id", 50)
+    val email = varchar("email", 50)
+    val hashedPassword = varchar("hashed_password", 150)
+
+    override val primaryKey: PrimaryKey = PrimaryKey(userId)
 }
