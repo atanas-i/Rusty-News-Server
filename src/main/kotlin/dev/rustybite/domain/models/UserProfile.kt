@@ -6,11 +6,11 @@ import java.util.UUID
 data class UserProfile(
     val profileId: String = UUID.randomUUID().toString(),
     val userId: String,
-    val firstName: String?,
-    val lastName: String?,
+    val firstName: String = "",
+    val lastName: String = "",
     val email: String,
-    val userName: String?,
-    val userProfilePicture: String?,
+    val userName: String = "",
+    val userProfilePicture: String = "",
 )
 
 object Profiles : Table() {
