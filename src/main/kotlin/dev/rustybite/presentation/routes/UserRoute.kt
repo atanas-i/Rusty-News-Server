@@ -21,6 +21,7 @@ fun Route.userRoute(
     route("user") {
         post("/registration") {
             val data = call.receive<User>()
+            //call.respondText("User with email ${data.email} has successfully created", status = HttpStatusCode.Created)
             val hashedUser = User(
                 userId = data.userId,
                 email = data.email,
@@ -34,10 +35,7 @@ fun Route.userRoute(
                     email = user.email
                 )
                 profileRepository.createProfile(profile)
-                call.respond(
-                    status = HttpStatusCode.Created,
-                    Response(success = true, message = "Successfully created user!"),
-                )
+
             } else {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
@@ -46,16 +44,23 @@ fun Route.userRoute(
             }
         }
         patch("/emails/{id}") {
+            val response = call.response
             val email = call.receive<String>()
             val id = call.parameters["id"] ?: return@patch call.respond(
                 HttpStatusCode.NotFound,
                 Response(success = false, message = "No user with such Id!")
             )
-            userRepository.updatePassword(id, email)
-            call.respond(
-                HttpStatusCode.OK,
-                Response(success = true, message = "Email updated successfully!")
-            )
+            if (userRepository.updatePassword(id, email)) {
+                call.respond(
+                    HttpStatusCode.OK,
+                    Response(success = true, message = "Email updated successfully!")
+                )
+            } else {
+                call.respond(
+                    response.status() ?: HttpStatusCode.BadRequest,
+                    Response(success = false, message = "An error occurred. Failed to update an email!")
+                )
+            }
         }
         patch("/security/{id}") {
             val receivedPassword = call.receive<String>()

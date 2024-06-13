@@ -12,7 +12,7 @@ class JwtService {
     private val secret = System.getenv("JWT_SECRET")
     private val issuer = System.getenv("ISSUER")
     private val audience = System.getenv("AUDIENCE")
-    private val realm = System.getenv("REALM")
+    val realm = System.getenv("REALM")
     private val algorithm = Algorithm.HMAC256(secret)
 
     val verifier = JWT.require(algorithm)

@@ -27,13 +27,13 @@ class UserRepositoryImpl : UserRepository {
 
     override suspend fun updatePassword(userId: String, newHashPassword: String): Boolean = dbQuery {
         Users.update(where = {Users.userId eq userId}) { statement ->
-            statement[Users.hashedPassword] = newHashPassword
+            statement[hashedPassword] = newHashPassword
         } > 0
     }
 
     override suspend fun updateEmail(userId: String, newEmail: String): Boolean = dbQuery {
         Users.update(where = {Users.userId eq userId}) { statement ->
-            statement[Users.email] = newEmail
+            statement[email] = newEmail
         } > 0
     }
 
