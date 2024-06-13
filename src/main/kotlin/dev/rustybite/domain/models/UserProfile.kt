@@ -1,8 +1,10 @@
 package dev.rustybite.domain.models
 
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 import java.util.UUID
 
+@Serializable
 data class UserProfile(
     val profileId: String = UUID.randomUUID().toString(),
     val userId: String,
