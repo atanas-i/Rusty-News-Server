@@ -4,11 +4,9 @@ import dev.rustybite.data.database.DatabaseFactory.dbQuery
 import dev.rustybite.data.repository.UserRepository
 import dev.rustybite.domain.models.User
 import dev.rustybite.domain.models.Users
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.statements.StatementType
 
 class UserRepositoryImpl : UserRepository {
     private fun rowToUser(row: ResultRow): User = User(
@@ -16,6 +14,10 @@ class UserRepositoryImpl : UserRepository {
         email = row[Users.email],
         hashedPassword = row[Users.hashedPassword]
     )
+
+    override suspend fun getUser(userId: String): User? = dbQuery {
+        Users.select(where = Users.userId eq userId).singleOrNull()?.let { rowToUser(it) }
+    }
     override suspend fun createUser(user: User): User? = dbQuery {
         val insertStatement = Users.insert { statement ->
             statement[userId] = user.userId
