@@ -20,50 +20,88 @@ fun Route.userRoute(
 ) {
     route("user") {
         post("/registration") {
-            val data = call.receive<User>()
-            //call.respondText("User with email ${data.email} has successfully created", status = HttpStatusCode.Created)
-            val hashedUser = User(
-                userId = data.userId,
-                email = data.email,
-                hashedPassword = hashFunction(data.hashedPassword)
-            )
-            service.generateToken(hashedUser)
-            val user = userRepository.createUser(hashedUser)
-            if (user != null) {
-                val profile = UserProfile(
-                    userId = user.userId,
-                    email = user.email
+            val regRequest = try {
+                call.receive<User>()
+            } catch (e: Exception) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    Response(
+                        success = false,
+                        message = e.localizedMessage
+                    )
                 )
-                profileRepository.createProfile(profile)
-
-            } else {
+                return@post
+            }
+            val hashedUser = User(
+                userId = regRequest.userId,
+                email = regRequest.email,
+                hashedPassword = hashFunction(regRequest.hashedPassword)
+            )
+            val user = userRepository.createUser(hashedUser)
+            try {
+                if (user != null) {
+                    val profile = UserProfile(
+                        userId = user.userId,
+                        email = user.email
+                    )
+                    profileRepository.createProfile(profile)
+                    call.respond(
+                        HttpStatusCode.Created,
+                        Response(
+                           success = true,
+                            message = service.generateToken(user)
+                        )
+                    )
+                } else {
+                    call.respond(
+                        status = HttpStatusCode.BadRequest,
+                        Response(success = false, message = "Failed to create user!"),
+                    )
+                }
+            } catch (e: Exception) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
-                    Response(success = false, message = "Failed to create user!"),
+                    Response(success = false, message = e.localizedMessage),
                 )
             }
         }
         patch("/emails/{id}") {
             val response = call.response
-            val email = call.receive<String>()
+            val email = try {
+                call.receive<String>()
+            } catch (e: Exception) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    Response(success = true, message = e.localizedMessage)
+                )
+                return@patch
+            }
             val id = call.parameters["id"] ?: return@patch call.respond(
                 HttpStatusCode.NotFound,
                 Response(success = false, message = "No user with such Id!")
             )
-            if (userRepository.updatePassword(id, email)) {
+            if (userRepository.updateEmail(id, email)) {
                 call.respond(
                     HttpStatusCode.OK,
-                    Response(success = true, message = "Email updated successfully!")
+                    Response(success = true, message = "Email updated successfully!"),
                 )
             } else {
                 call.respond(
                     response.status() ?: HttpStatusCode.BadRequest,
-                    Response(success = false, message = "An error occurred. Failed to update an email!")
+                    Response(success = false, message = "An error occurred. Failed to update an email")
                 )
             }
         }
         patch("/security/{id}") {
-            val receivedPassword = call.receive<String>()
+            val receivedPassword = try {
+                call.receive<String>()
+            } catch (e: Exception) {
+                call.respond(
+                    HttpStatusCode.NotFound,
+                    Response(success = false, message = e.localizedMessage)
+                )
+                return@patch
+            }
             val hashedPassword = hashFunction(receivedPassword)
             val id = call.parameters["id"] ?: return@patch call.respond(
                 HttpStatusCode.NotFound,
@@ -76,15 +114,23 @@ fun Route.userRoute(
             )
         }
         delete("/{id}") {
-            val id = call.parameters["id"] ?: return@delete call.respond(
-                HttpStatusCode.NotFound,
-                Response(success = false, message = "No user with such Id!")
-            )
-            userRepository.deleteUser(id)
-            call.respond(
-                HttpStatusCode.OK,
-                Response(success = true, message = "User deleted successfully!")
-            )
+            try {
+                val id = call.parameters["id"] ?: return@delete call.respond(
+                    HttpStatusCode.NotFound,
+                    Response(success = false, message = "No user with such Id!")
+                )
+                profileRepository.deleteProfile(id)
+                userRepository.deleteUser(id)
+                call.respond(
+                    HttpStatusCode.OK,
+                    Response(success = true, message = "User deleted successfully!")
+                )
+            } catch (e: Exception) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    Response(success = false, message = e.localizedMessage)
+                )
+            }
         }
     }
 }
