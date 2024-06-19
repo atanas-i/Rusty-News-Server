@@ -4,8 +4,10 @@ import dev.rustybite.data.repository.ProfileRepository
 import dev.rustybite.data.repository.UserRepository
 import dev.rustybite.domain.models.Response
 import dev.rustybite.domain.models.User
+import dev.rustybite.domain.models.UserCredentials
 import dev.rustybite.domain.models.UserProfile
 import dev.rustybite.presentation.security.JwtService
+import dev.rustybite.presentation.security.validatePassword
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -61,6 +63,43 @@ fun Route.userRoute(
             } catch (e: Exception) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
+                    Response(success = false, message = e.localizedMessage),
+                )
+            }
+        }
+        post("login") {
+            val credentials = try {
+                call.receive<UserCredentials>()
+            } catch (e: Exception) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    Response(success = false, message = e.localizedMessage)
+                )
+                return@post
+            }
+            try {
+                val user = userRepository.loginUser(credentials.email)
+                if (user != null) {
+                    if (validatePassword(credentials.password, user.hashedPassword)) {
+                        call.respond(
+                            HttpStatusCode.OK,
+                            Response(success = true, message = service.generateToken(user))
+                        )
+                    } else {
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            Response(success = false, message = "Invalid password!"),
+                        )
+                    }
+                } else {
+                    call.respond(
+                        HttpStatusCode.NotFound,
+                        Response(success = true, message = "User not found!"),
+                    )
+                }
+            } catch (e: Exception) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
                     Response(success = false, message = e.localizedMessage),
                 )
             }
