@@ -19,13 +19,13 @@ class UserRepositoryImpl : UserRepository {
         val insertStatement = Users.insert { statement ->
             statement[userId] = user.userId
             statement[email] = user.email
-            statement[hashedPassword] = user.userId
+            statement[hashedPassword] = user.hashedPassword
        }
         insertStatement.resultedValues?.firstOrNull()?.let { rowToUser(it) }
     }
 
-    override suspend fun loginUser(user: User): User? = dbQuery {
-        Users.select(where = { Users.email eq user.email }).singleOrNull()?.let { rowToUser(it) }
+    override suspend fun loginUser(email: String): User? = dbQuery {
+        Users.select(where = { Users.email eq email }).singleOrNull()?.let { rowToUser(it) }
     }
     override suspend fun updatePassword(userId: String, newHashPassword: String): Boolean = dbQuery {
         Users.update(where = {Users.userId eq userId}) { statement ->

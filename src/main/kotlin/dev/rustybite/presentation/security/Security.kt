@@ -7,34 +7,35 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
 
-private const val ALGORITHM = "PBKDF2WithHmacSHA512"
+private const val ALGORITHM = "PBKDF2WithHmacSHA256"
 private const val ITERATION_COUNT = 120_000
 private const val KEY_LENGHT = 256
 private val secret = System.getenv("HASH_SECRET")
 private fun ByteArray.toHexString(): String = HexFormat.of().formatHex(this)
 
-private fun generateRandomSalt(): String {
+private fun generateRandomSalt(): ByteArray {
     val random = SecureRandom()
     val salt = ByteArray(32)
     random.nextBytes(salt)
 
-    return salt.toHexString()
+    return salt
 }
 
 
 fun generateHash(password: String): String {
-    val combinedSalt = "${generateRandomSalt()}$secret".toByteArray()
+    val random = SecureRandom()
+    val salt = ByteArray(32)
+    random.nextBytes(salt)
     val factory = SecretKeyFactory.getInstance(ALGORITHM)
-    val spec: KeySpec = PBEKeySpec(password.toCharArray(),combinedSalt, ITERATION_COUNT, KEY_LENGHT)
-    val key = factory.generateSecret(spec)
-    val hash = key.encoded
+    val spec: KeySpec = PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGHT)
+    val key = factory.generateSecret(spec).encoded
 
-    return hash.toHexString()
+    return "${Base64.getEncoder().encodeToString(salt)}:${Base64.getEncoder().encodeToString(key)}"
 }
 
 fun validatePassword(password: String, storedHashedPassword: String): Boolean {
-    val salt = Base64.getDecoder().decode(getSalt(storedHashedPassword))
-    val hash = Base64.getDecoder().decode(getHashedPassword(storedHashedPassword))
+    val salt = Base64.getUrlDecoder().decode(getSalt(storedHashedPassword))
+    val hash = Base64.getUrlDecoder().decode(getHashedPassword(storedHashedPassword))
     val keySpec = PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGHT)
     val factory = SecretKeyFactory.getInstance(ALGORITHM)
     val computedHash = factory.generateSecret(keySpec).encoded
@@ -52,11 +53,11 @@ private fun getHashedPassword(storedHashedPassword: String): String {
     return parts[1]
 }
 
-private fun slowEquals(a: ByteArray, b: ByteArray): Boolean {
-    var diff = a.size xor b.size
+private fun slowEquals(salt: ByteArray, hash: ByteArray): Boolean {
+    var diff = salt.size xor hash.size
     var i = 0
-    while (i < a.size && i < b.size) {
-        diff = diff or (a[i].toInt() xor b[i].toInt())
+    while (i < salt.size && i < hash.size) {
+        diff = diff or (salt[i].toInt() xor hash[i].toInt())
         i++
     }
     return diff == 0
