@@ -1,12 +1,11 @@
 package dev.rustybite.presentation.security
 
-import io.ktor.utils.io.core.*
 import java.security.SecureRandom
 import java.security.spec.KeySpec
-import java.util.HexFormat
+import java.util.*
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
-import kotlin.text.toByteArray
+
 
 private const val ALGORITHM = "PBKDF2WithHmacSHA512"
 private const val ITERATION_COUNT = 120_000
@@ -32,3 +31,38 @@ fun generateHash(password: String): String {
 
     return hash.toHexString()
 }
+
+fun validatePassword(password: String, storedHashedPassword: String): Boolean {
+    val salt = Base64.getDecoder().decode(getSalt(storedHashedPassword))
+    val hash = Base64.getDecoder().decode(getHashedPassword(storedHashedPassword))
+    val keySpec = PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGHT)
+    val factory = SecretKeyFactory.getInstance(ALGORITHM)
+    val computedHash = factory.generateSecret(keySpec).encoded
+
+    return slowEquals(computedHash, hash)
+}
+
+private fun getSalt(storedHashedPassword: String): String {
+    val parts = storedHashedPassword.split(":")
+    return parts[0]
+}
+
+private fun getHashedPassword(storedHashedPassword: String): String {
+    val parts = storedHashedPassword.split(":")
+    return parts[1]
+}
+
+private fun slowEquals(a: ByteArray, b: ByteArray): Boolean {
+    var diff = a.size xor b.size
+    var i = 0
+    while (i < a.size && i < b.size) {
+        diff = diff or (a[i].toInt() xor b[i].toInt())
+        i++
+    }
+    return diff == 0
+}
+
+
+
+
+

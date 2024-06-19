@@ -15,9 +15,6 @@ class UserRepositoryImpl : UserRepository {
         hashedPassword = row[Users.hashedPassword]
     )
 
-    override suspend fun getUser(userId: String): User? = dbQuery {
-        Users.select(where = Users.userId eq userId).singleOrNull()?.let { rowToUser(it) }
-    }
     override suspend fun createUser(user: User): User? = dbQuery {
         val insertStatement = Users.insert { statement ->
             statement[userId] = user.userId
@@ -27,6 +24,9 @@ class UserRepositoryImpl : UserRepository {
         insertStatement.resultedValues?.firstOrNull()?.let { rowToUser(it) }
     }
 
+    override suspend fun loginUser(user: User): User? = dbQuery {
+        Users.select(where = { Users.email eq user.email }).singleOrNull()?.let { rowToUser(it) }
+    }
     override suspend fun updatePassword(userId: String, newHashPassword: String): Boolean = dbQuery {
         Users.update(where = {Users.userId eq userId}) { statement ->
             statement[hashedPassword] = newHashPassword
