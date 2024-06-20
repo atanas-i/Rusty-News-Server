@@ -43,6 +43,11 @@ class ProfileRepositoryImpl : ProfileRepository {
         } > 0
     }
 
+    override suspend fun updateEmail(userId: String, email: String): Boolean = dbQuery {
+        Profiles.update(where = { Profiles.userId eq userId }) { updateStatement ->
+            updateStatement[Profiles.email] = email
+        } > 0
+    }
     override suspend fun deleteProfile(userId: String): Boolean = dbQuery {
         Profiles.deleteWhere { Profiles.userId eq userId } > 0
     }
