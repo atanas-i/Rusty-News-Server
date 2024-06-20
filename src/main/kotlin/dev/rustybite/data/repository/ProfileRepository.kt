@@ -7,5 +7,6 @@ interface ProfileRepository {
     suspend fun getProfile(userId: String): UserProfile?
     suspend fun createProfile(profile: UserProfile): UserProfile?
     suspend fun updateProfile(profile: UserProfile): Boolean
+    suspend fun updateEmail(userId: String, email: String): Boolean
     suspend fun deleteProfile(userId: String): Boolean
 }

@@ -6,12 +6,14 @@ import dev.rustybite.domain.models.Profiles
 import dev.rustybite.domain.models.UserProfile
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import java.time.LocalDateTime
 
 class ProfileRepositoryImpl : ProfileRepository {
     private fun rowToProfile(row: ResultRow): UserProfile = UserProfile(
         profileId = row[Profiles.profileId], userId = row[Profiles.userId],
         firstName = row[Profiles.firstName], lastName = row[Profiles.lastName],
         email = row[Profiles.email], userName = row[Profiles.userName],
+        createdAt = row[Profiles.createdAt], updatedAt = row[Profiles.updatedAt],
         userProfilePicture = row[Profiles.userProfilePicture]
     )
     override suspend fun getProfile(userId: String): UserProfile? = dbQuery {
@@ -26,6 +28,8 @@ class ProfileRepositoryImpl : ProfileRepository {
             insertStatement[lastName] = profile.lastName
             insertStatement[email] = profile.email
             insertStatement[userName] = profile.userName
+            insertStatement[createdAt] = profile.createdAt
+            insertStatement[updatedAt] = profile.updatedAt
             insertStatement[userProfilePicture] = profile.userProfilePicture
         }
         insertStatement.resultedValues?.singleOrNull()?.let { rowToProfile(it) }
@@ -39,10 +43,17 @@ class ProfileRepositoryImpl : ProfileRepository {
             updateStatement[lastName] = profile.lastName
             updateStatement[email] = profile.email
             updateStatement[userName] = profile.userName
+            updateStatement[updatedAt] = LocalDateTime.now().toString()
             updateStatement[userProfilePicture] = profile.userProfilePicture
         } > 0
     }
 
+    override suspend fun updateEmail(userId: String, email: String): Boolean = dbQuery {
+        Profiles.update(where = { Profiles.userId eq userId }) { updateStatement ->
+            updateStatement[Profiles.email] = email
+            updateStatement[updatedAt] = LocalDateTime.now().toString()
+        } > 0
+    }
     override suspend fun deleteProfile(userId: String): Boolean = dbQuery {
         Profiles.deleteWhere { Profiles.userId eq userId } > 0
     }

@@ -67,7 +67,7 @@ fun Route.userRoute(
                 )
             }
         }
-        post("login") {
+        post("/login") {
             val credentials = try {
                 call.receive<UserCredentials>()
             } catch (e: Exception) {
@@ -119,15 +119,29 @@ fun Route.userRoute(
                 HttpStatusCode.NotFound,
                 Response(success = false, message = "No user with such Id!")
             )
-            if (userRepository.updateEmail(id, email)) {
-                call.respond(
-                    HttpStatusCode.OK,
-                    Response(success = true, message = "Email updated successfully!"),
-                )
-            } else {
+            try {
+                if (userRepository.updateEmail(id, email)) {
+                    if (profileRepository.updateEmail(id, email)) {
+                        call.respond(
+                            HttpStatusCode.OK,
+                            Response(success = true, message = "Email updated successfully!"),
+                        )
+                    } else {
+                        call.respond(
+                            response.status() ?: HttpStatusCode.BadRequest,
+                            Response(success = false, message = "An error occurred. Failed to update an email")
+                        )
+                    }
+                } else {
+                    call.respond(
+                        response.status() ?: HttpStatusCode.BadRequest,
+                        Response(success = false, message = "An error occurred. Failed to update an email")
+                    )
+                }
+            } catch (e: Exception) {
                 call.respond(
                     response.status() ?: HttpStatusCode.BadRequest,
-                    Response(success = false, message = "An error occurred. Failed to update an email")
+                    Response(success = false, message = e.localizedMessage)
                 )
             }
         }
