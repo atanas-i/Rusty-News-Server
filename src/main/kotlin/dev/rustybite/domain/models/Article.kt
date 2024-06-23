@@ -25,5 +25,5 @@ object Articles : Table() {
     val publishedAt = varchar("published_at", 150)
     val isBookmarked = bool("is_bookmarked")
     val isFavorite = bool("is_favorite")
-    val categories = ArrayColumnType(delegate = VarCharColumnType())
+    val categories = array<String>("categories")
 }
