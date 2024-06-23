@@ -78,7 +78,7 @@ fun Route.userRoute(
                 return@post
             }
             try {
-                val user = userRepository.loginUser(credentials.email)
+                val user = userRepository.getUserByEmail(credentials.email)
                 if (user != null) {
                     if (validatePassword(credentials.password, user.hashedPassword)) {
                         call.respond(
