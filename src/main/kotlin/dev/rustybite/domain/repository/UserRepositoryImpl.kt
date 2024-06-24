@@ -29,7 +29,7 @@ class UserRepositoryImpl : UserRepository {
         insertStatement.resultedValues?.firstOrNull()?.let { rowToUser(it) }
     }
 
-    override suspend fun loginUser(email: String): User? = dbQuery {
+    override suspend fun getUserByEmail(email: String): User? = dbQuery {
         Users.select(where = { Users.email eq email }).singleOrNull()?.let { rowToUser(it) }
     }
     override suspend fun updatePassword(userId: String, newHashPassword: String): Boolean = dbQuery {

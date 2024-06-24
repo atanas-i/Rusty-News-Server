@@ -1,7 +1,6 @@
 package dev.rustybite.data.database
 
-import dev.rustybite.domain.models.Profiles
-import dev.rustybite.domain.models.Users
+import dev.rustybite.domain.models.*
 import io.ktor.server.config.*
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
@@ -16,6 +15,9 @@ object DatabaseFactory {
         transaction {
             SchemaUtils.create(Users)
             SchemaUtils.create(Profiles)
+            SchemaUtils.create(Articles)
+            SchemaUtils.create(Bookmarks)
+            SchemaUtils.create(Favorites)
         }
     }
 

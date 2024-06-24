@@ -2,8 +2,10 @@ package dev.rustybite.presentation
 
 import dev.rustybite.data.database.DatabaseFactory
 import dev.rustybite.data.database.configureFlyway
+import dev.rustybite.data.repository.ArticleRepository
 import dev.rustybite.data.repository.ProfileRepository
 import dev.rustybite.data.repository.UserRepository
+import dev.rustybite.domain.repository.ArticleRepositoryImpl
 import dev.rustybite.domain.repository.ProfileRepositoryImpl
 import dev.rustybite.domain.repository.UserRepositoryImpl
 import dev.rustybite.presentation.plugins.configureRouting
@@ -20,6 +22,7 @@ fun main(args: Array<String>) {
 fun Application.module() {
     val userRepository: UserRepository = UserRepositoryImpl()
     val profileRepository: ProfileRepository = ProfileRepositoryImpl()
+    val articleRepository: ArticleRepository = ArticleRepositoryImpl()
     val service = JwtService()
     val hash = { data: String -> generateHash(data) }
 
@@ -30,6 +33,7 @@ fun Application.module() {
     configureRouting(
         userRepository,
         profileRepository,
+        articleRepository,
         service,
         hash
     )
