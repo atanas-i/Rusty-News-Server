@@ -14,7 +14,7 @@ data class Article(
     val publishedAt: String = LocalDateTime.now().toString(),
     val isBookmarked: Boolean = false,
     val isFavorite: Boolean = false,
-    val categories: List<String>,
+    val category: List<String>,
 )
 
 object Articles : Table() {
@@ -25,5 +25,5 @@ object Articles : Table() {
     val publishedAt = varchar("published_at", 150)
     val isBookmarked = bool("is_bookmarked")
     val isFavorite = bool("is_favorite")
-    val categories = array<String>("categories")
+    val category = array<String>("category")
 }

@@ -12,7 +12,7 @@ class ArticleRepositoryImpl : ArticleRepository {
         articleId = row[Articles.articleId], articleTitle = row[Articles.articleTitle],
         articleBody = row[Articles.articleBody], author = row[Articles.author],
         publishedAt = row[Articles.publishedAt], isBookmarked = row[Articles.isBookmarked],
-        isFavorite = row[Articles.isFavorite], categories = row[Articles.categories]
+        isFavorite = row[Articles.isFavorite], category = row[Articles.category]
     )
     private fun rowToBookmark(row: ResultRow): Bookmark = Bookmark(
         bookmarkId = row[Bookmarks.bookmarkId],
@@ -28,13 +28,13 @@ class ArticleRepositoryImpl : ArticleRepository {
     override suspend fun addArticle(article: Article): Article? = dbQuery {
         val insertStatement = Articles.insert{ statement ->
             statement[Articles.articleId] = article.articleId
-            statement[Articles.articleTitle] = article.articleId
+            statement[Articles.articleTitle] = article.articleTitle
             statement[articleBody] = article.articleBody
             statement[author] = article.author
             statement[publishedAt] = article.publishedAt
             statement[isBookmarked] = article.isBookmarked
             statement[isFavorite] = article.isFavorite
-            statement[categories] = article.categories
+            statement[category] = article.category
         }
 
         insertStatement.resultedValues?.singleOrNull()?.let { rowToArticle(it) }
