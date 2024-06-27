@@ -35,7 +35,7 @@ fun generateHash(password: String): String {
 
 fun validatePassword(password: String, storedHashedPassword: String): Boolean {
     val salt = Base64.getUrlDecoder().decode(getSalt(storedHashedPassword))
-    val hash = Base64.getUrlDecoder().decode(getHashedPassword(storedHashedPassword))
+    val hash = Base64.getDecoder().decode(getHashedPassword(storedHashedPassword))
     val keySpec = PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGHT)
     val factory = SecretKeyFactory.getInstance(ALGORITHM)
     val computedHash = factory.generateSecret(keySpec).encoded
@@ -62,6 +62,7 @@ private fun slowEquals(salt: ByteArray, hash: ByteArray): Boolean {
     }
     return diff == 0
 }
+
 
 
 

@@ -10,4 +10,10 @@ fun configureFlyway(config: ApplicationConfig) {
         .dataSource(hikariDataSource(config))
         .load()
     flyway.migrate()
+    val connection = hikariDataSource(config).connection
+    val statement = connection.createStatement()
+    statement.close()
+    connection.close()
+    //flyway.repair()
+    //flyway.migrate()
 }
